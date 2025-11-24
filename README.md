@@ -1,0 +1,1 @@
+"# POS-Hide-Closing-Register" 
