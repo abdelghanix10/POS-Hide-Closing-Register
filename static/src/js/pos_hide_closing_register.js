@@ -4,6 +4,7 @@ console.log("pos_hide_closing_register module loaded");
 
 import { patch } from "@web/core/utils/patch";
 import { PosStore } from "@point_of_sale/app/store/pos_store";
+import { renderToElement } from "@web/core/utils/render";
 
 patch(PosStore.prototype, {
   async closeSession() {
@@ -17,11 +18,30 @@ patch(PosStore.prototype, {
       expectedCash = info.default_cash_details.amount;
     }
 
-    // 2. Print "Daily Sale"
-    // Assuming we print the session summary
-    const receipt = this._getDailySaleReceipt();
-    if (this.hardwareProxy.printer) {
-      this.hardwareProxy.printer.print_receipt(receipt);
+    // 2. Print "Daily Sale" (Sale Details Report)
+    try {
+      const saleDetails = await this.data.call(
+        "report.point_of_sale.report_saledetails",
+        "get_sale_details",
+        [false, false, false, [this.session.id]]
+      );
+      const report = renderToElement(
+        "point_of_sale.SaleDetailsReport",
+        Object.assign({}, saleDetails, {
+          date: new Date().toLocaleString(),
+          pos: this,
+          formatCurrency: this.env.utils.formatCurrency,
+        })
+      );
+      const hardwareProxy = this.env.services.hardware_proxy;
+      if (hardwareProxy && hardwareProxy.printer) {
+        await hardwareProxy.printer.printReceipt(report);
+      } else {
+        // Fallback to browser print if hardware proxy is not available
+        this.env.services.printer.printWeb(report);
+      }
+    } catch (error) {
+      console.error("Failed to print Daily Sale report:", error);
     }
 
     // 3. Close register
@@ -55,16 +75,5 @@ patch(PosStore.prototype, {
       sessionStorage.removeItem(`connected_cashier_${odoo.pos_config_id}`);
       window.location = `/pos/ui?config_id=${odoo.pos_config_id}`;
     }
-  },
-
-  _getDailySaleReceipt() {
-    // Generate a simple receipt for daily sale
-    let receipt = "Daily Sale Report\n";
-    receipt += "Session: " + this.session.name + "\n";
-    receipt += "Date: " + new Date().toLocaleDateString() + "\n";
-    receipt += "Total Sales: " + this.session.total_payments_amount + "\n";
-    // Add more details as needed
-    receipt += "\nThank you!\n";
-    return receipt;
   },
 });
