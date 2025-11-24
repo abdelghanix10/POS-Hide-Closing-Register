@@ -33,13 +33,9 @@ patch(PosStore.prototype, {
           formatCurrency: this.env.utils.formatCurrency,
         })
       );
-      const hardwareProxy = this.env.services.hardware_proxy;
-      if (hardwareProxy && hardwareProxy.printer) {
-        await hardwareProxy.printer.printReceipt(report);
-      } else {
-        // Fallback to browser print if hardware proxy is not available
-        this.env.services.printer.printWeb(report);
-      }
+      await this.env.services.printer.printHtml(report, {
+        webPrintFallback: true,
+      });
     } catch (error) {
       console.error("Failed to print Daily Sale report:", error);
     }
