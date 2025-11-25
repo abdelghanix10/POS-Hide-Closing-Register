@@ -99,7 +99,7 @@
                         <hr style="border: none; border-top: 1px dashed #000; margin: 10px 0;"/>
                         <div style="text-align: center; margin-top: 10px;">
                             <strong>Thank you for using Odoo POS</strong><br/>
-                            <small>Generated on <t t-esc="o.stop_at"/></small>
+                            <small>Generated on <t t-esc="datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')"/></small>
                         </div>
                     </div>
                 </t>
