@@ -20,20 +20,19 @@ patch(PosStore.prototype, {
 
     // 2. Print "Daily Sale" (Sale Details Report)
     try {
-      const saleDetails = await this.data.call(
-        "report.point_of_sale.report_saledetails",
-        "get_sale_details",
-        [false, false, false, [this.session.id]]
+      const reportHtml = await this.data.call(
+        "pos.session",
+        "get_daily_sale_report_html",
+        [this.session.id]
       );
-      const report = renderToElement(
-        "point_of_sale.SaleDetailsReport",
-        Object.assign({}, saleDetails, {
-          date: new Date().toLocaleString(),
-          pos: this,
-          formatCurrency: this.env.utils.formatCurrency,
-        })
-      );
-      await this.env.services.printer.printHtml(report, {
+
+      // Create a temporary element to hold the report HTML
+      const reportElement = document.createElement("div");
+      reportElement.classList.add("pos-daily-sale-report");
+      reportElement.innerHTML = reportHtml;
+
+      // Print using the printer service
+      await this.env.services.printer.printHtml(reportElement, {
         webPrintFallback: true,
       });
     } catch (error) {
