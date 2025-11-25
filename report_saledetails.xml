@@ -6,11 +6,39 @@
                 body {
                     margin: 0;
                     padding: 0;
+                    font-weight: bold;
+                }
+                @media print {
+                    body {
+                        font-size: 16px;
+                        max-width: 80mm;
+                    }
+                }
+                @media screen {
+                    body {
+                        font-size: 18px;
+                    }
+                }
+                table {
+                    table-layout: fixed;
+                    width: 100%;
+                }
+                td, th {
+                    word-wrap: break-word;
+                    overflow-wrap: break-word;
+                    white-space: normal;
+                }
+                th:first-child, td:first-child {
+                    width: 50%;
+                }
+                th:nth-child(2), td:nth-child(2), th:nth-child(3), td:nth-child(3) {
+                    width: 25%;
+                    text-align: right;
                 }
             </style>
             <main>
                 <t t-foreach="docs" t-as="o">
-                    <div class="page" style="width: 80mm; font-size: 14px; font-family: monospace; padding: 5px;">
+                    <div class="page" style="width: 80mm; font-size: 16px; font-family: monospace; padding: 5px; font-weight: bold;">
                         <div style="text-align: center; margin-bottom: 10px;">
                             <img t-attf-src="/web/image/res.company/{{o.company_id.id}}/logo" style="max-width: 50mm; max-height: 20mm;"/><br/>
                             <strong><t t-esc="o.company_id.name"/></strong><br/>
@@ -46,7 +74,7 @@
                         <hr style="border: none; border-top: 1px dashed #000; margin: 10px 0;"/>
                         <div style="margin-bottom: 10px;">
                             <strong>SALES BREAKDOWN</strong><br/>
-                            <table style="width: 100%; font-size: 10px; border-collapse: collapse;">
+                            <table style="width: 100%; font-size: 14px; border-collapse: collapse; font-weight: bold;">
                                 <thead>
                                     <tr style="border-bottom: 1px solid #000;">
                                         <th style="text-align: left;">Item</th>
@@ -56,25 +84,28 @@
                                 </thead>
                                 <tbody>
                                     <t t-set="order_lines" t-value="o.order_ids.mapped('lines').filtered(lambda l: l.product_id and l.product_id.product_tmpl_id.pos_categ_ids)"/>
-                                                                        <t t-set="categories" t-value="order_lines.mapped(lambda l: l.product_id.product_tmpl_id.pos_categ_ids).sorted(key=lambda c: c.name)"/>
+                                    <t t-set="categories" t-value="order_lines.mapped(lambda l: l.product_id.product_tmpl_id.pos_categ_ids).sorted(key=lambda c: c.name)"/>
                                     <t t-foreach="categories" t-as="category">
                                         <t t-set="cat_lines" t-value="order_lines.filtered(lambda l: category in l.product_id.product_tmpl_id.pos_categ_ids)"/>
                                         <t t-set="cat_qty" t-value="sum(cat_lines.mapped('qty'))"/>
                                         <t t-set="cat_amount" t-value="sum(cat_lines.mapped('price_subtotal_incl'))"/>
-                                        <tr style="border-top: 1px solid #000;">
+                                        <tr style="border-top: 1px solid #000; font-size: 16px;">
                                             <td><strong><t t-esc="category.name"/></strong></td>
                                             <td style="text-align: right;"><strong><t t-esc="'{:.1f}'.format(cat_qty)"/></strong></td>
                                             <td style="text-align: right;"><strong><t t-esc="'{:.2f}'.format(cat_amount)"/> DH</strong></td>
                                         </tr>
-                                                                                <t t-set="products" t-value="cat_lines.mapped('product_id').sorted(key=lambda p: p.name)"/>
+                                        <t t-set="products" t-value="cat_lines.mapped('product_id').sorted(key=lambda p: p.name)"/>
                                         <t t-foreach="products" t-as="product">
                                             <t t-set="prod_lines" t-value="cat_lines.filtered(lambda l: l.product_id == product)"/>
                                             <t t-set="prod_qty" t-value="sum(prod_lines.mapped('qty'))"/>
                                             <t t-set="prod_amount" t-value="sum(prod_lines.mapped('price_subtotal_incl'))"/>
                                             <tr>
-                                                <td style="padding-left: 10px;">- <t t-esc="product.name"/></td>
+                                                <td style="padding-left: 10px;"><t t-esc="product.name"/></td>
                                                 <td style="text-align: right;"><t t-esc="'{:.1f}'.format(prod_qty)"/></td>
                                                 <td style="text-align: right;"><t t-esc="'{:.2f}'.format(prod_amount)"/> DH</td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="3"><hr style="border: none; border-top: 1px dashed #000; margin: 5px 0;"/></td>
                                             </tr>
                                         </t>
                                     </t>
