@@ -4,7 +4,6 @@ console.log("pos_hide_closing_register module loaded");
 
 import { patch } from "@web/core/utils/patch";
 import { PosStore } from "@point_of_sale/app/store/pos_store";
-import { renderToElement } from "@web/core/utils/render";
 
 patch(PosStore.prototype, {
   async closeSession() {
