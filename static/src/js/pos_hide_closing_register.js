@@ -4,10 +4,41 @@ console.log("pos_hide_closing_register module loaded");
 
 import { patch } from "@web/core/utils/patch";
 import { PosStore } from "@point_of_sale/app/store/pos_store";
+import { InventoryAdjustmentPopup } from "./inventory_adjustment_popup";
+import { makeAwaitable } from "@point_of_sale/app/store/make_awaitable_dialog";
 
 patch(PosStore.prototype, {
   async closeSession() {
     console.log("Custom closeSession called");
+
+    // 0. Ask for Inventory Adjustment
+    let products = [];
+    if (this.models && this.models["product.product"]) {
+      products = this.models["product.product"].getAll();
+    } else if (this.db) {
+      products = Object.values(this.db.product_by_id);
+    }
+
+    const payload = await makeAwaitable(
+      this.env.services.dialog,
+      InventoryAdjustmentPopup,
+      {
+        title: "Inventory Check",
+        products: products,
+      }
+    );
+
+    if (!payload) {
+      return;
+    }
+
+    if (payload && payload.length > 0) {
+      await this.data.call("pos.session", "apply_inventory_adjustments", [
+        this.session.id,
+        payload,
+      ]);
+    }
+
     // Custom logic for closing register without popup
 
     // 1. Get expected cash from server

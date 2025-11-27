@@ -16,3 +16,33 @@ class PosSession(models.Model):
         except Exception as e:
             import traceback
             return f"<html><body><h1>Error</h1><p>{str(e)}</p><pre>{traceback.format_exc()}</pre></body></html>"
+
+    @api.model
+    def apply_inventory_adjustments(self, session_id, adjustments):
+        session = self.browse(session_id)
+        if not session:
+            return False
+            
+        StockQuant = self.env['stock.quant']
+        location = session.config_id.picking_type_id.default_location_src_id
+        
+        for adj in adjustments:
+            product_id = adj.get('product_id')
+            quantity = adj.get('quantity')
+            
+            if product_id and quantity is not None:
+                quant = StockQuant.search([
+                    ('product_id', '=', product_id),
+                    ('location_id', '=', location.id),
+                ], limit=1)
+                
+                if not quant:
+                    quant = StockQuant.create({
+                        'product_id': product_id,
+                        'location_id': location.id,
+                    })
+                
+                quant.inventory_quantity = quantity
+                quant.action_apply_inventory()
+                
+        return True

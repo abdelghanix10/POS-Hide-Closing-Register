@@ -8,6 +8,8 @@
     'data': ['report_saledetails.xml'],
     'assets': {
         'point_of_sale._assets_pos': [
+            'pos_hide_closing_register/static/src/js/inventory_adjustment_popup.js',
+            'pos_hide_closing_register/static/src/xml/inventory_adjustment_popup.xml',
             'pos_hide_closing_register/static/src/js/pos_hide_closing_register.js',
         ],
     },

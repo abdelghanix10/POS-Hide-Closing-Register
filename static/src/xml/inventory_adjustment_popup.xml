@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="pos_hide_closing_register.InventoryAdjustmentPopup">
+        <Dialog title="props.title || 'Inventory Adjustment'">
+            <div class="popup-content">
+                <div class="inventory-lines" style="max-height: 200px; overflow-y: auto; margin-bottom: 10px;">
+                    <t t-foreach="state.lines" t-as="line" t-key="line.id">
+                        <div class="inventory-line" style="display: flex; justify-content: space-between; padding: 5px; border-bottom: 1px solid #eee;">
+                            <span t-esc="line.product_name" style="flex: 2;"/>
+                            <span t-esc="line.quantity" style="flex: 1; text-align: right;"/>
+                            <i class="fa fa-trash" style="cursor: pointer; color: red; margin-left: 10px;" t-on-click="() => this.removeLine(line.id)"/>
+                        </div>
+                    </t>
+                </div>
+                <div class="add-line-form" style="display: flex; gap: 5px;">
+                    <select class="detail" t-model="state.selectedProductId" style="flex: 2; padding: 5px;">
+                        <option value="">Select Product</option>
+                        <t t-foreach="props.products" t-as="product" t-key="product.id">
+                            <option t-att-value="product.id">
+                                <t t-esc="product.display_name"/>
+                            </option>
+                        </t>
+                    </select>
+                    <input type="number" class="detail" t-model="state.inputQty" placeholder="Qty" style="flex: 1; padding: 5px;"/>
+                    <div class="button" t-on-click="addLine" style="padding: 5px 10px; background: #eee; cursor: pointer;">
+                        <i class="fa fa-plus"/>
+                    </div>
+                </div>
+            </div>
+            <t t-set-slot="footer">
+                <button class="button cancel btn btn-secondary" t-on-click="cancel">Cancel</button>
+                <button class="button confirm btn btn-primary" t-on-click="confirm">Valid</button>
+            </t>
+        </Dialog>
+    </t>
+</templates>
