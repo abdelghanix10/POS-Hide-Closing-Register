@@ -9,34 +9,40 @@ import { makeAwaitable } from "@point_of_sale/app/store/make_awaitable_dialog";
 
 patch(PosStore.prototype, {
   async closeSession() {
+    if (!this.config.hide_closing_register) {
+      return super.closeSession();
+    }
+
     console.log("Custom closeSession called");
 
     // 0. Ask for Inventory Adjustment
-    let products = [];
-    if (this.models && this.models["product.product"]) {
-      products = this.models["product.product"].getAll();
-    } else if (this.db) {
-      products = Object.values(this.db.product_by_id);
-    }
-
-    const payload = await makeAwaitable(
-      this.env.services.dialog,
-      InventoryAdjustmentPopup,
-      {
-        title: "Inventory Check",
-        products: products,
+    if (this.config.enable_inventory_adjustment) {
+      let products = [];
+      if (this.models && this.models["product.product"]) {
+        products = this.models["product.product"].getAll();
+      } else if (this.db) {
+        products = Object.values(this.db.product_by_id);
       }
-    );
 
-    if (!payload) {
-      return;
-    }
+      const payload = await makeAwaitable(
+        this.env.services.dialog,
+        InventoryAdjustmentPopup,
+        {
+          title: "Inventory Check",
+          products: products,
+        }
+      );
 
-    if (payload && payload.length > 0) {
-      await this.data.call("pos.session", "apply_inventory_adjustments", [
-        this.session.id,
-        payload,
-      ]);
+      if (!payload) {
+        return;
+      }
+
+      if (payload && payload.length > 0) {
+        await this.data.call("pos.session", "apply_inventory_adjustments", [
+          this.session.id,
+          payload,
+        ]);
+      }
     }
 
     // Custom logic for closing register without popup
