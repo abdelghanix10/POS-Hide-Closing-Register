@@ -16,8 +16,44 @@ export class InventoryAdjustmentPopup extends Component {
     this.state = useState({
       lines: [],
       selectedProductId: "",
-      inputQty: 0,
+      inputQty: "",
+      dropdownOpen: false,
     });
+  }
+
+  get selectedProduct() {
+    if (!this.state.selectedProductId) return null;
+    return this.props.products.find((p) => p.id === parseInt(this.state.selectedProductId));
+  }
+
+  getImageUrl(productId) {
+    return `/web/image?model=product.product&field=image_128&id=${productId}`;
+  }
+
+  toggleDropdown() {
+    this.state.dropdownOpen = !this.state.dropdownOpen;
+  }
+
+  selectProduct(productId) {
+    this.state.selectedProductId = productId;
+    this.state.dropdownOpen = false;
+  }
+
+  onKeypadClick(value) {
+    if (value === 'C') {
+      this.state.inputQty = "";
+    } else if (value === '.') {
+      if (!this.state.inputQty.includes('.')) {
+        this.state.inputQty += value;
+      }
+    } else {
+      // If input is 0, replace it, otherwise append
+      if (this.state.inputQty === "0") {
+        this.state.inputQty = value;
+      } else {
+        this.state.inputQty += value;
+      }
+    }
   }
 
   addLine() {
@@ -39,7 +75,7 @@ export class InventoryAdjustmentPopup extends Component {
     });
 
     this.state.selectedProductId = "";
-    this.state.inputQty = 0;
+    this.state.inputQty = "";
   }
 
   removeLine(id) {
