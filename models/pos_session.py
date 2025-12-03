@@ -24,6 +24,7 @@ class PosSession(models.Model):
             return False
             
         StockQuant = self.env['stock.quant']
+        Product = self.env['product.product']
         location = session.config_id.picking_type_id.default_location_src_id
         
         for adj in adjustments:
@@ -31,6 +32,10 @@ class PosSession(models.Model):
             quantity = adj.get('quantity')
             
             if product_id and quantity is not None:
+                product = Product.browse(product_id)
+                if product.type != 'product':
+                    continue
+
                 quant = StockQuant.search([
                     ('product_id', '=', product_id),
                     ('location_id', '=', location.id),
