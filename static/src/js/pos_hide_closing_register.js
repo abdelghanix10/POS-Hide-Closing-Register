@@ -24,6 +24,15 @@ patch(PosStore.prototype, {
         products = Object.values(this.db.product_by_id);
       }
 
+      if (
+        this.config.inventory_adjustment_product_ids &&
+        this.config.inventory_adjustment_product_ids.length > 0
+      ) {
+        products = products.filter((p) =>
+          this.config.inventory_adjustment_product_ids.includes(p.id)
+        );
+      }
+
       const payload = await makeAwaitable(
         this.env.services.dialog,
         InventoryAdjustmentPopup,
