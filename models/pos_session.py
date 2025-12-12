@@ -10,8 +10,8 @@ class PosSession(models.Model):
             session = self.env['pos.session'].browse(session_id)
             if not session:
                 return "<html><body><h1>Session not found</h1></body></html>"
-            report = self.env.ref('pos_hide_closing_register.sale_details_report')
-            html = report._render_qweb_html(report.report_name, [session_id])[0].decode('utf-8')
+            # Simple test HTML
+            html = f"<html><body><h1>Daily Sale Report</h1><p>Session: {session.name}</p><p>Status: {session.state}</p></body></html>"
             return html
         except Exception as e:
             import traceback
@@ -23,31 +23,41 @@ class PosSession(models.Model):
         if not session:
             return False
             
-        StockQuant = self.env['stock.quant']
-        Product = self.env['product.product']
         location = session.config_id.picking_type_id.default_location_src_id
+        
+        if not adjustments:
+            return True
+        
+        # Create inventory adjustment
+        inventory = self.env['stock.inventory'].create({
+            'name': f'POS Inventory Adjustment - Session {session_id}',
+            'location_ids': [(6, 0, [location.id])],
+            'product_ids': [(6, 0, list(set(adj['product_id'] for adj in adjustments)))],
+        })
+        
+        inventory.action_start()
         
         for adj in adjustments:
             product_id = adj.get('product_id')
-            quantity = adj.get('quantity')
+            quantity = adj.get('quantity', 0)
             
             if product_id and quantity is not None:
-                product = Product.browse(product_id)
+                product = self.env['product.product'].browse(product_id)
                 if product.type != 'product':
                     continue
-
-                quant = StockQuant.search([
-                    ('product_id', '=', product_id),
-                    ('location_id', '=', location.id),
-                ], limit=1)
                 
-                if not quant:
-                    quant = StockQuant.create({
-                        'product_id': product_id,
-                        'location_id': location.id,
-                    })
-                
-                quant.inventory_quantity = quantity
+                # Create inventory line with counted quantity
+                self.env['stock.inventory.line'].create({
+                    'inventory_id': inventory.id,
+                    'product_id': product_id,
+                    'location_id': location.id,
+                    'product_qty': quantity,
+                })
+        
+        # Validate the inventory to apply adjustments
+        inventory.action_validate()
+        
+        return True
                 quant.action_apply_inventory()
                 
         return True

@@ -58,27 +58,6 @@ patch(PosStore.prototype, {
       }
     }
 
-    // 3. Print "Daily Sale" (Sale Details Report)
-    try {
-      const reportHtml = await this.data.call(
-        "pos.session",
-        "get_daily_sale_report_html",
-        [this.session.id]
-      );
-
-      // Create a temporary element to hold the report HTML
-      const reportElement = document.createElement("div");
-      reportElement.classList.add("pos-daily-sale-report");
-      reportElement.innerHTML = reportHtml;
-
-      // Print using the printer service
-      await this.env.services.printer.printHtml(reportElement, {
-        webPrintFallback: true,
-      });
-    } catch (error) {
-      console.error("Failed to print Daily Sale report:", error);
-    }
-
     // Custom logic for closing register without popup
 
     // 1. Get expected cash from server
@@ -115,12 +94,40 @@ patch(PosStore.prototype, {
       }
     );
 
+    // 3. Print "Daily Sale" (Sale Details Report)
+    try {
+      const reportHtml = await this.data.call(
+        "pos.session",
+        "get_daily_sale_report_html",
+        [this.session.id]
+      );
+
+      // Create a temporary element to hold the report HTML
+      const reportElement = document.createElement("div");
+      reportElement.classList.add("pos-daily-sale-report");
+      reportElement.innerHTML = reportHtml;
+
+      // Print using the printer service
+      if (this.printer && this.printer.printHtml) {
+        await this.printer.printHtml(reportElement, {
+          webPrintFallback: true,
+        });
+      } else {
+        console.log("Printer not available, skipping print");
+      }
+    } catch (error) {
+      console.error("Failed to print Daily Sale report:", error);
+    }
+
     this.isCustomClosing = false;
 
     if (response.successful) {
-      localStorage.removeItem(`pos.session.${odoo.pos_config_id}`);
-      sessionStorage.removeItem(`connected_cashier_${odoo.pos_config_id}`);
-      window.location = `/pos/ui?config_id=${odoo.pos_config_id}`;
+      // Delay the redirect to allow print to complete
+      setTimeout(() => {
+        localStorage.removeItem(`pos.session.${odoo.pos_config_id}`);
+        sessionStorage.removeItem(`connected_cashier_${odoo.pos_config_id}`);
+        window.location = `/pos/ui?config_id=${odoo.pos_config_id}`;
+      }, 2000);
     }
   },
 
