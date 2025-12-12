@@ -1,6 +1,6 @@
 # POS Hide Closing Register
 
-This Odoo 18 module streamlines the Point of Sale closing process by replacing the standard closing popup with a custom workflow. It integrates inventory adjustments directly into the closing sequence and automates the generation of the daily sales report.
+This Odoo 19 module streamlines the Point of Sale closing process by replacing the standard closing popup with a custom workflow. It integrates inventory adjustments directly into the closing sequence and automates the generation of the daily sales report.
 
 ## Features
 
@@ -18,7 +18,7 @@ This Odoo 18 module streamlines the Point of Sale closing process by replacing t
 
 ## Technical Details
 
-- **Odoo Version**: 18.0
+- **Odoo Version**: 19.0
 - **Dependencies**: `point_of_sale`
 - **Architecture**:
   - Extends `PosStore` to intercept the `closeSession` method.

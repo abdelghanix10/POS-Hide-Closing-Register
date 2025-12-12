@@ -1,6 +1,6 @@
 {
     'name': 'POS Hide Closing Register',
-    'version': '1.0',
+    'version': '19.0.1.0.0',
     'category': 'Point of Sale',
     'summary': 'Hide closing register popup and automate closing process',
     'description': 'This module hides the closing register popup and performs custom actions when closing the register.',

@@ -3,9 +3,9 @@
 console.log("pos_hide_closing_register module loaded");
 
 import { patch } from "@web/core/utils/patch";
-import { PosStore } from "@point_of_sale/app/store/pos_store";
+import { PosStore } from "@point_of_sale/app/services/pos_store";
 import { InventoryAdjustmentPopup } from "./inventory_adjustment_popup";
-import { makeAwaitable } from "@point_of_sale/app/store/make_awaitable_dialog";
+import { makeAwaitable } from "@point_of_sale/app/utils/make_awaitable_dialog";
 
 patch(PosStore.prototype, {
   async closeSession() {
@@ -14,6 +14,8 @@ patch(PosStore.prototype, {
     }
 
     console.log("Custom closeSession called");
+
+    this.isCustomClosing = true;
 
     // 0. Ask for Inventory Adjustment
     if (this.config.enable_inventory_adjustment) {
@@ -44,6 +46,7 @@ patch(PosStore.prototype, {
       );
 
       if (!payload) {
+        this.isCustomClosing = false;
         return;
       }
 
@@ -53,6 +56,27 @@ patch(PosStore.prototype, {
           payload,
         ]);
       }
+    }
+
+    // 3. Print "Daily Sale" (Sale Details Report)
+    try {
+      const reportHtml = await this.data.call(
+        "pos.session",
+        "get_daily_sale_report_html",
+        [this.session.id]
+      );
+
+      // Create a temporary element to hold the report HTML
+      const reportElement = document.createElement("div");
+      reportElement.classList.add("pos-daily-sale-report");
+      reportElement.innerHTML = reportHtml;
+
+      // Print using the printer service
+      await this.env.services.printer.printHtml(reportElement, {
+        webPrintFallback: true,
+      });
+    } catch (error) {
+      console.error("Failed to print Daily Sale report:", error);
     }
 
     // Custom logic for closing register without popup
@@ -91,31 +115,19 @@ patch(PosStore.prototype, {
       }
     );
 
-    // 3. Print "Daily Sale" (Sale Details Report)
-    try {
-      const reportHtml = await this.data.call(
-        "pos.session",
-        "get_daily_sale_report_html",
-        [this.session.id]
-      );
-
-      // Create a temporary element to hold the report HTML
-      const reportElement = document.createElement("div");
-      reportElement.classList.add("pos-daily-sale-report");
-      reportElement.innerHTML = reportHtml;
-
-      // Print using the printer service
-      await this.env.services.printer.printHtml(reportElement, {
-        webPrintFallback: true,
-      });
-    } catch (error) {
-      console.error("Failed to print Daily Sale report:", error);
-    }
+    this.isCustomClosing = false;
 
     if (response.successful) {
       localStorage.removeItem(`pos.session.${odoo.pos_config_id}`);
       sessionStorage.removeItem(`connected_cashier_${odoo.pos_config_id}`);
       window.location = `/pos/ui?config_id=${odoo.pos_config_id}`;
+    }
+  },
+
+  closingSessionNotification(data) {
+    if (this.isCustomClosing) return;
+    if (data.message === "close_tabs" && data.session == this.session.id) {
+      this.closePos();
     }
   },
 });
