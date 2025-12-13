@@ -26,7 +26,7 @@
                                 <i class="fa fa-caret-down" style="margin-left: auto;"/>
                             </div>
                             <div class="options" t-if="state.dropdownOpen" style="position: absolute; top: 100%; left: 0; right: 0; max-height: 200px; overflow-y: auto; background: white; border: 1px solid #ccc; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
-                                <t t-foreach="props.products" t-as="product" t-key="product.id">
+                                <t t-foreach="availableProducts" t-as="product" t-key="product.id">
                                     <div class="option" t-on-click="() => this.selectProduct(product.id)" style="padding: 5px; display: flex; align-items: center; cursor: pointer; border-bottom: 1px solid #eee;">
                                         <img t-att-src="this.getImageUrl(product.id)" style="width: 30px; height: 30px; margin-right: 10px; object-fit: cover;"/>
                                         <span t-esc="product.display_name"/>
