@@ -23,7 +23,14 @@ export class InventoryAdjustmentPopup extends Component {
 
   get selectedProduct() {
     if (!this.state.selectedProductId) return null;
-    return this.props.products.find((p) => p.id === parseInt(this.state.selectedProductId));
+    return this.props.products.find(
+      (p) => p.id === parseInt(this.state.selectedProductId)
+    );
+  }
+
+  get availableProducts() {
+    const addedIds = this.state.lines.map((l) => l.product_id);
+    return this.props.products.filter((p) => !addedIds.includes(p.id));
   }
 
   getImageUrl(productId) {
@@ -40,10 +47,10 @@ export class InventoryAdjustmentPopup extends Component {
   }
 
   onKeypadClick(value) {
-    if (value === 'C') {
+    if (value === "C") {
       this.state.inputQty = "";
-    } else if (value === '.') {
-      if (!this.state.inputQty.includes('.')) {
+    } else if (value === ".") {
+      if (!this.state.inputQty.includes(".")) {
         this.state.inputQty += value;
       }
     } else {
@@ -66,6 +73,11 @@ export class InventoryAdjustmentPopup extends Component {
 
     const product = this.props.products.find((p) => p.id === productId);
     if (!product) return;
+
+    // Check if product is already added
+    if (this.state.lines.some((l) => l.product_id === productId)) {
+      return;
+    }
 
     this.state.lines.push({
       id: Date.now(),
