@@ -98,7 +98,7 @@
                                         </tr>
                                         <tr style="border-top: 1px solid #000; font-size: 15px;">
                                             <td style="padding-top: 10px;"><strong><t t-esc="category.name"/></strong></td>
-                                            <td style="text-align: right; padding-right: 10px; padding-top: 10px;"><strong><t t-esc="'{:.1f}'.format(cat_qty)"/></strong></td>
+                                            <td style="text-align: right; padding-right: 10px; padding-top: 10px;"><strong><t t-esc="'{:.0f}'.format(cat_qty)"/></strong></td>
                                             <td style="text-align: center; padding-top: 10px;"><strong><t t-esc="'{:.2f}'.format(cat_amount)"/> DH</strong></td>
                                         </tr>
                                         <t t-set="products" t-value="cat_lines.mapped('product_id').sorted(key=lambda p: p.name)"/>
@@ -111,7 +111,7 @@
                                             </tr>
                                             <tr>
                                                 <td style="padding-left: 10px;"><t t-esc="product.name"/></td>
-                                                <td style="text-align: right; padding-right: 10px;"><t t-esc="'{:.1f}'.format(prod_qty)"/></td>
+                                                <td style="text-align: right; padding-right: 10px;"><t t-esc="'{:.0f}'.format(prod_qty)"/></td>
                                                 <td style="text-align: center;"><t t-esc="'{:.2f}'.format(prod_amount)"/> DH</td>
                                             </tr>
                                         </t>
