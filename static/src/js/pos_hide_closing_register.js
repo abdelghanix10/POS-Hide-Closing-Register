@@ -107,13 +107,15 @@ patch(PosStore.prototype, {
       reportElement.classList.add("pos-daily-sale-report");
       reportElement.innerHTML = reportHtml;
 
-      // Print using the printer service
-      if (this.printer && this.printer.printHtml) {
-        await this.printer.printHtml(reportElement, {
-          webPrintFallback: true,
-        });
+      // Check print method from config
+      const printMethod = this.config.print_method || "chrome_preview";
+
+      if (printMethod === "qz_tray") {
+        // Print using QZ Tray
+        await this._printWithQzTray(reportHtml);
       } else {
-        console.log("Printer not available, skipping print");
+        // Print using Chrome Print Preview (browser dialog)
+        await this._printWithChromePreview(reportHtml);
       }
     } catch (error) {
       console.error("Failed to print Daily Sale report:", error);
@@ -128,6 +130,87 @@ patch(PosStore.prototype, {
         sessionStorage.removeItem(`connected_cashier_${odoo.pos_config_id}`);
         window.location = `/pos/ui?config_id=${odoo.pos_config_id}`;
       }, 2000);
+    }
+  },
+
+  async _printWithChromePreview(htmlContent) {
+    // Open a new window for Chrome print preview
+    const printWindow = window.open("", "_blank", "width=800,height=600");
+    if (printWindow) {
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Daily Sale Report</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            @media print {
+              body { margin: 0; }
+            }
+          </style>
+        </head>
+        <body>
+          ${htmlContent}
+          <script>
+            window.onload = function() {
+              window.print();
+              window.onafterprint = function() { window.close(); };
+            };
+          </script>
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
+    } else {
+      console.error(
+        "Could not open print window. Please check popup blocker settings."
+      );
+    }
+  },
+
+  async _printWithQzTray(htmlContent) {
+    // Check if QZ Tray is available
+    if (typeof qz === "undefined") {
+      console.error("QZ Tray is not loaded. Falling back to Chrome print.");
+      await this._printWithChromePreview(htmlContent);
+      return;
+    }
+
+    try {
+      // Connect to QZ Tray if not connected
+      if (!qz.websocket.isActive()) {
+        await qz.websocket.connect();
+      }
+
+      // Find the default printer
+      const printer = await qz.printers.getDefault();
+      if (!printer) {
+        console.error(
+          "No default printer found. Falling back to Chrome print."
+        );
+        await this._printWithChromePreview(htmlContent);
+        return;
+      }
+
+      // Configure print job
+      const config = qz.configs.create(printer);
+
+      // Create print data (HTML format)
+      const data = [
+        {
+          type: "html",
+          format: "plain",
+          data: htmlContent,
+        },
+      ];
+
+      // Send to printer
+      await qz.print(config, data);
+      console.log("Report printed successfully via QZ Tray");
+    } catch (error) {
+      console.error("QZ Tray printing failed:", error);
+      // Fallback to Chrome print preview
+      await this._printWithChromePreview(htmlContent);
     }
   },
 

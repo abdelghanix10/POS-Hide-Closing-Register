@@ -11,6 +11,9 @@
                     <field name="enable_inventory_adjustment" invisible="not hide_closing_register"/>
                     <field name="inventory_adjustment_product_ids" widget="many2many_tags" invisible="not enable_inventory_adjustment"/>
                 </group>
+                <group string="Printing" name="printing_section">
+                    <field name="print_method" widget="radio"/>
+                </group>
             </xpath>
         </field>
     </record>
