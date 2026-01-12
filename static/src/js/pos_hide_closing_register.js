@@ -1,6 +1,5 @@
 /** @odoo-module */
 
-console.log("pos_hide_closing_register module loaded");
 
 import { patch } from "@web/core/utils/patch";
 import { PosStore } from "@point_of_sale/app/services/pos_store";
@@ -13,7 +12,6 @@ patch(PosStore.prototype, {
       return super.closeSession();
     }
 
-    console.log("Custom closeSession called");
 
     this.isCustomClosing = true;
 
@@ -118,7 +116,6 @@ patch(PosStore.prototype, {
         await this._printWithChromePreview(reportHtml);
       }
     } catch (error) {
-      console.error("Failed to print Daily Sale report:", error);
     }
 
     this.isCustomClosing = false;
@@ -162,16 +159,12 @@ patch(PosStore.prototype, {
       `);
       printWindow.document.close();
     } else {
-      console.error(
-        "Could not open print window. Please check popup blocker settings."
-      );
     }
   },
 
   async _printWithQzTray(htmlContent) {
     // Check if QZ Tray is available
     if (typeof qz === "undefined") {
-      console.error("QZ Tray is not loaded. Falling back to Chrome print.");
       await this._printWithChromePreview(htmlContent);
       return;
     }
@@ -185,9 +178,6 @@ patch(PosStore.prototype, {
       // Find the default printer
       const printer = await qz.printers.getDefault();
       if (!printer) {
-        console.error(
-          "No default printer found. Falling back to Chrome print."
-        );
         await this._printWithChromePreview(htmlContent);
         return;
       }
@@ -206,9 +196,7 @@ patch(PosStore.prototype, {
 
       // Send to printer
       await qz.print(config, data);
-      console.log("Report printed successfully via QZ Tray");
     } catch (error) {
-      console.error("QZ Tray printing failed:", error);
       // Fallback to Chrome print preview
       await this._printWithChromePreview(htmlContent);
     }
