@@ -1,6 +1,5 @@
 /** @odoo-module */
 
-
 import { patch } from "@web/core/utils/patch";
 import { PosStore } from "@point_of_sale/app/services/pos_store";
 import { InventoryAdjustmentPopup } from "./inventory_adjustment_popup";
@@ -11,7 +10,6 @@ patch(PosStore.prototype, {
     if (!this.config.hide_closing_register) {
       return super.closeSession();
     }
-
 
     this.isCustomClosing = true;
 
@@ -29,7 +27,7 @@ patch(PosStore.prototype, {
         this.config.inventory_adjustment_product_ids.length > 0
       ) {
         const allowedIds = this.config.inventory_adjustment_product_ids.map(
-          (item) => (item && typeof item === "object" ? item.id : item)
+          (item) => (item && typeof item === "object" ? item.id : item),
         );
         products = products.filter((p) => allowedIds.includes(p.id));
       }
@@ -40,7 +38,7 @@ patch(PosStore.prototype, {
         {
           title: "Inventory Check",
           products: products,
-        }
+        },
       );
 
       if (!payload) {
@@ -73,13 +71,13 @@ patch(PosStore.prototype, {
         [this.session.id],
         {
           counted_cash: expectedCash,
-        }
+        },
       );
     }
     await this.data.call(
       "pos.session",
       "update_closing_control_state_session",
-      [this.session.id, ""]
+      [this.session.id, ""],
     );
     const response = await this.data.call(
       "pos.session",
@@ -89,7 +87,7 @@ patch(PosStore.prototype, {
         context: {
           login_number: odoo.login_number,
         },
-      }
+      },
     );
 
     // 3. Print "Daily Sale" (Sale Details Report)
@@ -97,7 +95,7 @@ patch(PosStore.prototype, {
       const reportHtml = await this.data.call(
         "pos.session",
         "get_daily_sale_report_html",
-        [this.session.id]
+        [this.session.id],
       );
 
       // Create a temporary element to hold the report HTML
@@ -115,8 +113,7 @@ patch(PosStore.prototype, {
         // Print using Chrome Print Preview (browser dialog)
         await this._printWithChromePreview(reportHtml);
       }
-    } catch (error) {
-    }
+    } catch (error) {}
 
     this.isCustomClosing = false;
 
@@ -163,7 +160,41 @@ patch(PosStore.prototype, {
   },
 
   async _printWithQzTray(htmlContent) {
-    // Check if QZ Tray is available
+    // Try to use the centralized QZ service first
+    const qzService = this.env.services.qz_tray;
+
+    // Wrap content with requested styles
+    const wrappedHtml = `
+      <html>
+        <head>
+          <style>
+            /* Styles handled by report template */
+          </style>
+        </head>
+        <body>
+          ${htmlContent}
+        </body>
+      </html>
+    `;
+
+    if (qzService) {
+      try {
+        await qzService.connect();
+        const qzLib = qzService.getQZ();
+        const printerName = await qzLib.printers.getDefault();
+        await qzService.print(printerName, wrappedHtml, "pixel", {
+          scaleContent: false,
+        });
+        return;
+      } catch (e) {
+        console.error(
+          "QZ Service print failed, falling back to local logic or chrome preview",
+          e,
+        );
+      }
+    }
+
+    // Check if QZ Tray is available globally (fallback)
     if (typeof qz === "undefined") {
       await this._printWithChromePreview(htmlContent);
       return;
@@ -183,14 +214,14 @@ patch(PosStore.prototype, {
       }
 
       // Configure print job
-      const config = qz.configs.create(printer);
+      const config = qz.configs.create(printer, { scaleContent: false });
 
       // Create print data (HTML format)
       const data = [
         {
           type: "html",
           format: "plain",
-          data: htmlContent,
+          data: wrappedHtml,
         },
       ];
 

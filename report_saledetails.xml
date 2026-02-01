@@ -4,19 +4,16 @@
         <template id="report_saledetails">
             <style>
                 body {
-                    margin: 0;
-                    padding: 0;
                     font-weight: bold;
                 }
                 @media print {
                     body {
-                        font-size: 16px;
-                        max-width: 80mm;
+                        font-size: 14px;
                     }
                 }
                 @media screen {
                     body {
-                        font-size: 18px;
+                        font-size: 14px;
                     }
                 }
                 table {
@@ -42,30 +39,29 @@
             </style>
             <main>
                 <t t-foreach="docs" t-as="o">
-                    <div class="page" style="width: 80mm; font-size: 16px; font-family: monospace; padding: 5px; font-weight: bold;">
-                        <div style="text-align: center; margin-bottom: 10px;">
-                            <img t-attf-src="/web/image/res.company/{{o.company_id.id}}/logo" style="max-width: 50mm; max-height: 20mm;"/><br/>
+                    <div class="page" style="font-size: 14px; font-family: monospace; padding: 5px; font-weight: bold;">
+                        <div style="text-align: center; margin-bottom: 5px;">
                             <strong><t t-esc="o.company_id.name"/></strong><br/>
                             <small><t t-esc="o.company_id.street or ''"/>, <t t-esc="o.company_id.city or ''"/>, <t t-esc="o.company_id.country_id.name if o.company_id.country_id else ''"/></small><br/>
                             <small>Phone: <t t-esc="o.company_id.phone or ''"/></small><br/>
                         </div>
-                        <div style="text-align: center; margin-bottom: 10px; border-bottom: 1px solid #000; padding-bottom: 5px;">
+                        <div style="text-align: center; margin-bottom: 5px; border-bottom: 1px solid #000;">
                             <strong>SESSION REPORT</strong>
                         </div>
-                        <div style="margin-bottom: 10px;">
+                        <div style="margin-bottom: 5px;">
                             <strong>Session ID:</strong> <t t-esc="o.name"/><br/>
                             <strong>Opened:</strong> <t t-esc="o.start_at"/><br/>
                             <strong>Closed:</strong> <t t-esc="o.stop_at"/><br/>
                             <strong>Status:</strong> <t t-esc="o.state"/><br/>
                         </div>
-                        <hr style="border: none; border-top: 1px dashed #000; margin: 10px 0;"/>
-                        <div style="margin-bottom: 10px;">
+                        <hr style="border: none; border-top: 1px dashed #000; margin: 5px 0;"/>
+                        <div style="margin-bottom: 5px;">
                             <strong>Opening Balance:</strong> <t t-esc="'{:.2f}'.format(o.cash_register_balance_start)"/> DH<br/>
                             <strong>Closing Balance:</strong> <t t-esc="'{:.2f}'.format(o.cash_register_balance_end_real)"/> DH<br/>
                             <strong>Difference:</strong> <t t-esc="'{:.2f}'.format(o.cash_register_difference)"/> DH<br/>
                         </div>
-                        <hr style="border: none; border-top: 1px dashed #000; margin: 10px 0;"/>
-                        <div style="margin-bottom: 10px;">
+                        <hr style="border: none; border-top: 1px dashed #000; margin: 5px 0;"/>
+                        <div style="margin-bottom: 5px;">
                             <strong>Gross Sales:</strong> <t t-esc="'{:.2f}'.format(sum(o.order_ids.mapped('amount_total')))"/> DH<br/>
                             <strong>Tax:</strong> <t t-esc="'{:.2f}'.format(sum(o.order_ids.mapped('amount_tax')))"/> DH<br/>
                             <strong>Returns:</strong> <t t-esc="'{:.2f}'.format(sum(o.order_ids.filtered(lambda x: x.amount_total &lt; 0).mapped('amount_total')))"/> DH<br/>
@@ -75,10 +71,10 @@
                             <strong>Total:</strong> <t t-esc="'{:.2f}'.format(sum(o.order_ids.mapped('amount_total')))"/> DH<br/>
                         </div>
                         
-                        <hr style="border: none; border-top: 1px dashed #000; margin: 10px 0;"/>
-                        <div style="margin-bottom: 10px;">
+                        <hr style="border: none; border-top: 1px dashed #000; margin: 5px 0;"/>
+                        <div style="margin-bottom: 5px;">
                             <strong>SALES BREAKDOWN</strong><br/>
-                            <table style="width: 100%; font-size: 14px; border-collapse: collapse; font-weight: bold;">
+                            <table style="font-size: 14px; border-collapse: collapse; font-weight: bold;">
                                 <thead>
                                     <tr style="border-bottom: 1px solid #000;">
                                         <th style="text-align: left;">Item</th>
@@ -94,12 +90,12 @@
                                         <t t-set="cat_qty" t-value="sum(cat_lines.mapped('qty'))"/>
                                         <t t-set="cat_amount" t-value="sum(cat_lines.mapped('price_subtotal_incl'))"/>
                                         <tr>
-                                            <td colspan="3" style="height: 10px;"></td>
+                                            <td colspan="3" style="height: 5px;"></td>
                                         </tr>
-                                        <tr style="border-top: 1px solid #000; font-size: 15px;">
-                                            <td style="padding-top: 10px;"><strong><t t-esc="category.name"/></strong></td>
-                                            <td style="text-align: right; padding-right: 10px; padding-top: 10px;"><strong><t t-esc="'{:.0f}'.format(cat_qty)"/></strong></td>
-                                            <td style="text-align: center; padding-top: 10px;"><strong><t t-esc="'{:.2f}'.format(cat_amount)"/> DH</strong></td>
+                                        <tr style="border-top: 1px solid #000; font-size: 14px;">
+                                            <td style="padding-top: 5px;"><strong><t t-esc="category.name"/></strong></td>
+                                            <td style="text-align: right; padding-right: 10px; padding-top: 5px;"><strong><t t-esc="'{:.0f}'.format(cat_qty)"/></strong></td>
+                                            <td style="text-align: center; padding-top: 5px;"><strong><t t-esc="'{:.2f}'.format(cat_amount)"/> DH</strong></td>
                                         </tr>
                                         <t t-set="products" t-value="cat_lines.mapped('product_id').sorted(key=lambda p: p.name)"/>
                                         <t t-foreach="products" t-as="product">
@@ -117,14 +113,14 @@
                                         </t>
                                     </t>
                                     <tr>
-                                        <td colspan="3" style="height: 10px;"></td>
+                                        <td colspan="3" style="height: 5px;"></td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
                         
-                        <hr style="border: none; border-top: 1px dashed #000; margin: 10px 0;"/>
-                        <div style="margin-bottom: 10px;">
+                        <hr style="border: none; border-top: 1px dashed #000; margin: 5px 0;"/>
+                        <div style="margin-bottom: 5px;">
                             <strong>PAYMENTS</strong><br/>
                             <t t-set="payments" t-value="o.order_ids.mapped('payment_ids')"/>
                             <t t-set="payment_methods" t-value="payments.mapped('payment_method_id').sorted(key=lambda m: m.name)"/>
@@ -133,12 +129,12 @@
                                 <t t-esc="method.name"/>: <t t-esc="'{:.2f}'.format(sum(method_payments.mapped('amount')))"/> DH<br/>
                             </t>
                         </div>
-                        <hr style="border: none; border-top: 1px dashed #000; margin: 10px 0;"/>
-                        <div style="text-align: center; margin-bottom: 10px;">
+                        <hr style="border: none; border-top: 1px dashed #000; margin: 5px 0;"/>
+                        <div style="text-align: center; margin-bottom: 5px;">
                             <strong>TOTAL SALES: <t t-esc="'{:.2f}'.format(sum(o.order_ids.mapped('amount_total')))"/> DH</strong>
                         </div>
-                        <hr style="border: none; border-top: 1px dashed #000; margin: 10px 0;"/>
-                        <div style="text-align: center; margin-top: 10px;">
+                        <hr style="border: none; border-top: 1px dashed #000; margin: 5px 0;"/>
+                        <div style="text-align: center; margin-top: 5px;">
                             <strong>Thank you for using Odoo POS</strong><br/>
                             <small>Generated on <t t-esc="datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')"/></small>
                         </div>
