@@ -55,20 +55,8 @@
                             <strong>Status:</strong> <t t-esc="o.state"/><br/>
                         </div>
                         <hr style="border: none; border-top: 1px dashed #000; margin: 5px 0;"/>
-                        <div style="margin-bottom: 5px;">
-                            <strong>Opening Balance:</strong> <t t-esc="'{:.2f}'.format(o.cash_register_balance_start)"/> DH<br/>
-                            <strong>Closing Balance:</strong> <t t-esc="'{:.2f}'.format(o.cash_register_balance_end_real)"/> DH<br/>
-                            <strong>Difference:</strong> <t t-esc="'{:.2f}'.format(o.cash_register_difference)"/> DH<br/>
-                        </div>
-                        <hr style="border: none; border-top: 1px dashed #000; margin: 5px 0;"/>
-                        <div style="margin-bottom: 5px;">
-                            <strong>Gross Sales:</strong> <t t-esc="'{:.2f}'.format(sum(o.order_ids.mapped('amount_total')))"/> DH<br/>
-                            <strong>Tax:</strong> <t t-esc="'{:.2f}'.format(sum(o.order_ids.mapped('amount_tax')))"/> DH<br/>
-                            <strong>Returns:</strong> <t t-esc="'{:.2f}'.format(sum(o.order_ids.filtered(lambda x: x.amount_total &lt; 0).mapped('amount_total')))"/> DH<br/>
-                            <strong>Cash In:</strong> <t t-esc="'{:.2f}'.format(o.cash_register_balance_end_real - o.cash_register_balance_start)"/> DH<br/>
-                            <strong>Cash Out:</strong> <t t-esc="'{:.2f}'.format(0.0)"/> DH<br/>
-                            <strong>Discount:</strong> <t t-esc="'{:.2f}'.format(sum(o.order_ids.mapped('lines').filtered(lambda l: l.discount).mapped(lambda l: l.price_unit * l.qty * l.discount / 100)))"/> DH<br/>
-                            <strong>Total:</strong> <t t-esc="'{:.2f}'.format(sum(o.order_ids.mapped('amount_total')))"/> DH<br/>
+                        <div style="text-align: center; margin-bottom: 5px;">
+                            <strong>TOTAL SALES: <t t-esc="'{:.2f}'.format(sum(o.order_ids.mapped('amount_total')))"/> DH</strong>
                         </div>
                         
                         <hr style="border: none; border-top: 1px dashed #000; margin: 5px 0;"/>
