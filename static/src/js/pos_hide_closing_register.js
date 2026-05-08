@@ -206,10 +206,10 @@ patch(PosStore.prototype, {
         await qz.websocket.connect({
           host: "localhost",
           port: {
-            secure: [8181, 8282, 8383, 8484], // Secure ports only
-            insecure: [],                      // Leave empty to block ws://
+            secure: [8181], // QZ Tray WSS port (confirmed active)
+            insecure: [],   // Leave empty to block ws://
           },
-          usingSecure: true,                   // Force wss://
+          usingSecure: true, // Force wss://
           keepAlive: 60,
         });
       }
